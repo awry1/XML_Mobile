@@ -23,10 +23,12 @@ class MainActivity : AppCompatActivity() {
     private val getContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
-                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).apply {
-                    setGravity(Gravity.BOTTOM, 0, 0)
-                }.show()
-            }
+                // Convert data to string
+                val bundle = Bundle().apply {
+                    putString("fileUri", it.toString())  // Put URI as a string
+                }
+                // Navigate to the fragment and pass the URI (Uniform Resource Identifier)
+                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.MainFragment, bundle)            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
