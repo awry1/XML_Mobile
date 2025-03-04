@@ -1,9 +1,8 @@
 package com.seriouscompany.xmlmobile
 
+import android.net.Uri
 import android.os.Bundle
-import android.view.Gravity
 import android.view.Menu
-import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -14,22 +13,45 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.seriouscompany.xmlmobile.databinding.ActivityMainBinding
+import java.io.InputStream
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private val treeStructure = XMLTreeStructure()
 
-    private val getContent =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            uri?.let {
-                // Convert data to string
-                val bundle = Bundle().apply {
-                    putString("fileUri", it.toString())  // Put URI as a string
-                }
-                // Navigate to the fragment and pass the URI (Uniform Resource Identifier)
-                findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.MainFragment, bundle)            }
+    private val file = File()
+    private val recentFiles = mutableListOf<File>()
+
+    private val getFile = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            file.uri = it
+            file.content = readFileContent(it)
+            file.treeRoot = treeStructure.parseXMLFromFile(file)
+            recentFiles.add(file)
+
+            // Create a bundle to pass the file to the fragment
+            val bundle = Bundle().apply {
+                putParcelable("file", file)
+            }
+
+            // Navigate to the fragment and pass the file
+            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.MainFragment, bundle)
         }
+    }
+
+    private fun readFileContent(uri: Uri): String? {
+        try {
+            // Open the file and read its content
+            val inputStream: InputStream? = this.contentResolver.openInputStream(uri)
+            val content = inputStream?.bufferedReader()?.use { it.readText() }
+            return content
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error reading file: ${e.message}", Toast.LENGTH_LONG).show()
+            return null
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,8 +66,7 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.fab.setOnClickListener {
-            getContent.launch("*/*")
-//            getContent.launch("*/*xml")
+            getFile.launch("*/*")
         }
     }
 
@@ -73,21 +94,21 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-//        return when (item.itemId) {
-//            R.id.action_settings -> {
-//                Toast.makeText(this, "settings pressed", Toast.LENGTH_SHORT).apply {
-//                    setGravity(Gravity.BOTTOM, 0, 0)
-//                }.show()
-//                true
-//            }
-//            else -> super.onOptionsItemSelected(item)
-//        }
-        return super.onOptionsItemSelected(item)
-    }
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+////        return when (item.itemId) {
+////            R.id.action_settings -> {
+////                Toast.makeText(this, "settings pressed", Toast.LENGTH_SHORT).apply {
+////                    setGravity(Gravity.BOTTOM, 0, 0)
+////                }.show()
+////                true
+////            }
+////            else -> super.onOptionsItemSelected(item)
+////        }
+//        return super.onOptionsItemSelected(item)
+//    }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
