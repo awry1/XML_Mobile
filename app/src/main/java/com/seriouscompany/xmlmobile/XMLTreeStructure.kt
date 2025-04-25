@@ -14,6 +14,8 @@ class XMLTreeStructure {
         var nodeValue: String? = null
         private var children: MutableList<Node> = ArrayList()
 
+        fun getChildren(): List<Node> = children
+
         fun addChild(child: Node) {
             children.add(child)
         }
