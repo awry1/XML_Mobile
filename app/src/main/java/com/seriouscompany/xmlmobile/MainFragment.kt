@@ -1,6 +1,10 @@
 package com.seriouscompany.xmlmobile
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,8 +31,34 @@ class MainFragment : Fragment() {
         val context = parent.context
         val nodeView = LayoutInflater.from(context).inflate(R.layout.tree_node, parent, false)
         val button = nodeView.findViewById<Button>(R.id.node_button)
-        button.text = "${"  ".repeat(depth)}<${node.nodeName}> ${node.nodeValue.orEmpty()}"
-        button.setTextColor(0xFF4285F4.toInt())
+        
+        val text = "${depth}. <${node.nodeName}> ${node.nodeValue.orEmpty()}"
+        val spannable = SpannableString(text)
+        // Define the ranges for the colored parts
+        val depthEnd = text.indexOf(" ")
+        val tagStart = text.indexOf("<")
+        val tagEnd = text.indexOf(">") + 1
+        val valueStart = tagEnd + 1
+        // Apply different colors
+        spannable.setSpan(
+            ForegroundColorSpan(Color.RED),
+            0,
+            depthEnd,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        spannable.setSpan(
+            ForegroundColorSpan(Color.BLUE),
+            tagStart,
+            tagEnd,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        spannable.setSpan(
+            ForegroundColorSpan(Color.DKGRAY),
+            valueStart,
+            text.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        button.text = spannable
 
         // Kontener na dzieci
         val childContainer = LinearLayout(context).apply {
