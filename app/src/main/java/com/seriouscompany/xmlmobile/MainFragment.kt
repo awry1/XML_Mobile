@@ -40,19 +40,19 @@ class MainFragment : Fragment() {
         val tagEnd = text.indexOf(">") + 1
         val valueStart = tagEnd + 1
         // Apply different colors
-        spannable.setSpan(
+        spannable.setSpan( //Color for numbering
             ForegroundColorSpan(Color.RED),
             0,
             depthEnd,
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-        spannable.setSpan(
+        spannable.setSpan( //Color for tag
             ForegroundColorSpan(Color.BLUE),
             tagStart,
             tagEnd,
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-        spannable.setSpan(
+        spannable.setSpan(//Color for tag content
             ForegroundColorSpan(Color.DKGRAY),
             valueStart,
             text.length,
