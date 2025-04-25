@@ -28,6 +28,7 @@ class MainFragment : Fragment() {
         val nodeView = LayoutInflater.from(context).inflate(R.layout.tree_node, parent, false)
         val button = nodeView.findViewById<Button>(R.id.node_button)
         button.text = "${"  ".repeat(depth)}<${node.nodeName}> ${node.nodeValue.orEmpty()}"
+        button.setTextColor(0xFF4285F4.toInt())
 
         // Kontener na dzieci
         val childContainer = LinearLayout(context).apply {
