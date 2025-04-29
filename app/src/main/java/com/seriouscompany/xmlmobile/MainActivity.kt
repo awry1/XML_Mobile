@@ -1,10 +1,15 @@
 package com.seriouscompany.xmlmobile
 
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
 import android.view.Menu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
@@ -28,6 +33,18 @@ class MainActivity : AppCompatActivity() {
         uri?.let {
             file.uri = it
             file.content = readFileContent(it)
+            var appName = ""
+            if (file.content!!.contains("<?mso-application progid=\"Word.Document\"?>")) {
+                appName = "Word"
+            } else if (file.content!!.contains("<?mso-application progid=\"Excel.Sheet\"?>")) {
+                appName = "Excel"
+            }
+            if(appName != ""){
+                //val test = binding.textView4.setText("ABECADŁO")
+                //Toast.makeText(this, "This is a pop-up message!", Toast.LENGTH_SHORT).show()
+                showConfirmationDialog(appName)
+                return@let
+            }
             file.treeRoot = treeStructure.parseXMLFromFile(file)
             recentFiles.add(file)
 
@@ -109,6 +126,52 @@ class MainActivity : AppCompatActivity() {
 ////        }
 //        return super.onOptionsItemSelected(item)
 //    }
+
+    private fun showConfirmationDialog(appName: String) { //Dialog to show user problem with opening xml file
+        val message = SpannableStringBuilder()
+        val part1 = "XML file you are trying to read is supposed to be open by "
+        val part2 = "Microsoft Office"
+        val part3 = " dedicated app: "
+        val part4 = appName
+
+        // Append the first part
+        message.append(part1)
+
+        // Make the word "continue" bold
+        val continueSpan = SpannableString(part2)
+        continueSpan.setSpan(StyleSpan(Typeface.BOLD), 0, part2.length, 0)
+        message.append(continueSpan)
+
+        // Append the last part
+        message.append(part3)
+
+        val continueSpan1 = SpannableString(part4)
+        continueSpan1.setSpan(StyleSpan(Typeface.BOLD), 0, part4.length, 0)
+        message.append(continueSpan1)
+
+        AlertDialog.Builder(this)
+            .setTitle("Content unspported")
+            .setMessage(message)
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+                continueWithApp()
+            }
+            /*.setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+                exitApp()
+            }*/
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun continueWithApp() { //Just testing
+        // Logic to continue using the app
+    }
+
+    private fun exitApp() { //Just testing
+        // Logic to exit the app or show a message
+        finish()
+    }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
