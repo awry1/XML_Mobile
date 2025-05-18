@@ -9,6 +9,7 @@ import android.text.style.StyleSpan
 import android.view.Menu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -18,55 +19,43 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.seriouscompany.xmlmobile.databinding.ActivityMainBinding
-import java.io.InputStream
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private val treeStructure = XMLTreeStructure()
-
-    private val file = File()
-    private val recentFiles = mutableListOf<File>()
+    private val viewModel by viewModels<MainViewModel>()
 
     private val getFile = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
-            file.uri = it
-            file.content = readFileContent(it)
-            var appName = ""
-            if (file.content!!.contains("<?mso-application progid=\"Word.Document\"?>")) {
-                appName = "Word"
-            } else if (file.content!!.contains("<?mso-application progid=\"Excel.Sheet\"?>")) {
-                appName = "Excel"
+            val file = File().apply {
+                this.uri = it
+                this.content = readFileContent(it)
+                this.treeRoot = treeStructure.parseXMLFromFile(this)
             }
-            if(appName != ""){
-                //val test = binding.textView4.setText("ABECADŁO")
-                //Toast.makeText(this, "This is a pop-up message!", Toast.LENGTH_SHORT).show()
-                showConfirmationDialog(appName)
+
+            viewModel.file = file
+            viewModel.wasFileLoaded = true
+
+            if (file.content!!.contains("<?mso-application progid=\"Word.Document\"?>")) {
+                showConfirmationDialog("Word")
+                return@let
+            } else if (file.content!!.contains("<?mso-application progid=\"Excel.Sheet\"?>")) {
+                showConfirmationDialog("Excel")
                 return@let
             }
-            file.treeRoot = treeStructure.parseXMLFromFile(file)
-            recentFiles.add(file)
 
-            // Create a bundle to pass the file to the fragment
-            val bundle = Bundle().apply {
-                putParcelable("file", file)
-            }
-
-            // Navigate to the fragment and pass the file
-            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.MainFragment, bundle)
+            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.MainFragment)
         }
     }
 
     private fun readFileContent(uri: Uri): String? {
-        try {
-            // Open the file and read its content
-            val inputStream: InputStream? = this.contentResolver.openInputStream(uri)
-            val content = inputStream?.bufferedReader()?.use { it.readText() }
-            return content
+        return try {
+            contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
         } catch (e: Exception) {
             Toast.makeText(this, "Error reading file: ${e.message}", Toast.LENGTH_LONG).show()
-            return null
+            null
         }
     }
 
@@ -127,7 +116,8 @@ class MainActivity : AppCompatActivity() {
 //        return super.onOptionsItemSelected(item)
 //    }
 
-    private fun showConfirmationDialog(appName: String) { //Dialog to show user problem with opening xml file
+    private fun showConfirmationDialog(appName: String) {
+        //Dialog to show user problem with opening xml file
         val message = SpannableStringBuilder()
         val part1 = "XML file you are trying to read is supposed to be open by "
         val part2 = "Microsoft Office"
@@ -164,11 +154,11 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun continueWithApp() { //Just testing
+    private fun continueWithApp() {
         // Logic to continue using the app
     }
 
-    private fun exitApp() { //Just testing
+    private fun exitApp() {
         // Logic to exit the app or show a message
         finish()
     }

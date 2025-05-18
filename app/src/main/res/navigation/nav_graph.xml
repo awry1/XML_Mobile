@@ -10,4 +10,5 @@
         android:name="com.seriouscompany.xmlmobile.MainFragment"
         android:label="@string/main_fragment_label"
         tools:layout="@layout/fragment_main" />
+
 </navigation>

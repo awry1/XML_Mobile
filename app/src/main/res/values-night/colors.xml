@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="numbering">#CC0000</color>
+    <color name="tag">#CC6633</color>
+    <color name="value">#FFFFFF</color>
+
+</resources>

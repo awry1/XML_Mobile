@@ -1,6 +1,5 @@
 package com.seriouscompany.xmlmobile
 
-import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -11,13 +10,17 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.seriouscompany.xmlmobile.databinding.FragmentMainBinding
+import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
 
 class MainFragment : Fragment() {
 
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
+    private val viewModel by activityViewModels<MainViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,48 +30,55 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val file = viewModel.file
+
+        if (file?.treeRoot != null) {
+            val container = binding.root.findViewById<LinearLayout>(R.id.tree_container)
+            container.removeAllViews()
+            addNodeView(file.treeRoot!!, container)
+        } else if (viewModel.wasFileLoaded) {
+            Toast.makeText(context, "Błąd: Brak danych XML", Toast.LENGTH_LONG).show()
+        }
+    }
+
     private fun addNodeView(node: XMLTreeStructure.Node, parent: ViewGroup, depth: Int = 0) {
         val context = parent.context
         val nodeView = LayoutInflater.from(context).inflate(R.layout.tree_node, parent, false)
         val button = nodeView.findViewById<Button>(R.id.node_button)
-        
+
         val text = "${depth}. <${node.nodeName}> ${node.nodeValue.orEmpty()}"
         val spannable = SpannableString(text)
-        // Define the ranges for the colored parts
+
         val depthEnd = text.indexOf(" ")
         val tagStart = text.indexOf("<")
         val tagEnd = text.indexOf(">") + 1
         val valueStart = tagEnd + 1
-        // Apply different colors
-        spannable.setSpan( //Color for numbering
-            ForegroundColorSpan(Color.RED),
-            0,
-            depthEnd,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+
+        spannable.setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(context, R.color.numbering)),
+            0, depthEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-        spannable.setSpan( //Color for tag
-            ForegroundColorSpan(Color.BLUE),
-            tagStart,
-            tagEnd,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        spannable.setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(context, R.color.tag)),
+            tagStart, tagEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-        spannable.setSpan(//Color for tag content
-            ForegroundColorSpan(Color.DKGRAY),
-            valueStart,
-            text.length,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        spannable.setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(context, R.color.value)),
+            valueStart, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
+
         button.text = spannable
 
-        // Kontener na dzieci
         val childContainer = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             visibility = View.GONE
-            setPadding(32, 0, 0, 0)
         }
 
         button.setOnClickListener {
-            childContainer.visibility = if (childContainer.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            childContainer.visibility = if (childContainer.isVisible) View.GONE else View.VISIBLE
         }
 
         parent.addView(button)
@@ -76,20 +86,6 @@ class MainFragment : Fragment() {
 
         for (child in node.getChildren()) {
             addNodeView(child, childContainer, depth + 1)
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        arguments?.getParcelable<File>("file")?.let { file ->
-            if (file.content != null) {
-                val container = binding.root.findViewById<LinearLayout>(R.id.tree_container)
-                container.removeAllViews()
-                file.treeRoot?.let { addNodeView(it, container) }
-            } else {
-                Toast.makeText(context, "Error reading file", Toast.LENGTH_LONG).show()
-            }
         }
     }
 
