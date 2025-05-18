@@ -1,26 +1,23 @@
 package com.seriouscompany.xmlmobile
 
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.seriouscompany.xmlmobile.databinding.FragmentMainBinding
-import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.seriouscompany.xmlmobile.databinding.FragmentMainBinding
 
 class MainFragment : Fragment() {
 
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
-    private val viewModel by activityViewModels<MainViewModel>()
+
+    private val viewModel: MainViewModel by activityViewModels()
+    private lateinit var adapter: XMLTreeAdapter
+    private val visibleNodes = mutableListOf<VisibleNode>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,56 +33,50 @@ class MainFragment : Fragment() {
         val file = viewModel.file
 
         if (file?.treeRoot != null) {
-            val container = binding.root.findViewById<LinearLayout>(R.id.tree_container)
-            container.removeAllViews()
-            addNodeView(file.treeRoot!!, container)
-        } else if (viewModel.wasFileLoaded) {
-            Toast.makeText(context, "Błąd: Brak danych XML", Toast.LENGTH_LONG).show()
+            visibleNodes.clear()
+            visibleNodes.add(VisibleNode(file.treeRoot!!, 0))
+            setupRecyclerView()
+        } else {
+            Toast.makeText(context, "Załaduj plik XML", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun addNodeView(node: XMLTreeStructure.Node, parent: ViewGroup, depth: Int = 0) {
-        val context = parent.context
-        val nodeView = LayoutInflater.from(context).inflate(R.layout.tree_node, parent, false)
-        val button = nodeView.findViewById<Button>(R.id.node_button)
-
-        val text = "${depth}. <${node.nodeName}> ${node.nodeValue.orEmpty()}"
-        val spannable = SpannableString(text)
-
-        val depthEnd = text.indexOf(" ")
-        val tagStart = text.indexOf("<")
-        val tagEnd = text.indexOf(">") + 1
-        val valueStart = tagEnd + 1
-
-        spannable.setSpan(
-            ForegroundColorSpan(ContextCompat.getColor(context, R.color.numbering)),
-            0, depthEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        spannable.setSpan(
-            ForegroundColorSpan(ContextCompat.getColor(context, R.color.tag)),
-            tagStart, tagEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        spannable.setSpan(
-            ForegroundColorSpan(ContextCompat.getColor(context, R.color.value)),
-            valueStart, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-
-        button.text = spannable
-
-        val childContainer = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            visibility = View.GONE
+    private fun setupRecyclerView() {
+        adapter = XMLTreeAdapter(visibleNodes) { position ->
+            toggleChildren(position)
         }
 
-        button.setOnClickListener {
-            childContainer.visibility = if (childContainer.isVisible) View.GONE else View.VISIBLE
-        }
+        binding.treeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.treeRecyclerView.adapter = adapter
+    }
 
-        parent.addView(button)
-        parent.addView(childContainer)
+    private fun toggleChildren(position: Int) {
+        val node = visibleNodes[position]
+        val children = node.node.getChildren()
 
-        for (child in node.getChildren()) {
-            addNodeView(child, childContainer, depth + 1)
+        if (children.isEmpty()) return
+
+        val insertPosition = position + 1
+
+        // Are children already expanded?
+        val isExpanded = (insertPosition < visibleNodes.size &&
+                visibleNodes[insertPosition].depth > node.depth)
+
+        if (isExpanded) {
+            // Delete children (recursively)
+            var removeCount = 0
+            var i = insertPosition
+            while (i < visibleNodes.size && visibleNodes[i].depth > node.depth) {
+                removeCount++
+                i++
+            }
+            visibleNodes.subList(insertPosition, insertPosition + removeCount).clear()
+            adapter.notifyItemRangeRemoved(insertPosition, removeCount)
+        } else {
+            // Append children at the right position
+            val newNodes = children.map { VisibleNode(it, node.depth + 1) }
+            visibleNodes.addAll(insertPosition, newNodes)
+            adapter.notifyItemRangeInserted(insertPosition, newNodes.size)
         }
     }
 

@@ -100,22 +100,6 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-////        return when (item.itemId) {
-////            R.id.action_settings -> {
-////                Toast.makeText(this, "settings pressed", Toast.LENGTH_SHORT).apply {
-////                    setGravity(Gravity.BOTTOM, 0, 0)
-////                }.show()
-////                true
-////            }
-////            else -> super.onOptionsItemSelected(item)
-////        }
-//        return super.onOptionsItemSelected(item)
-//    }
-
     private fun showConfirmationDialog(appName: String) {
         //Dialog to show user problem with opening xml file
         val message = SpannableStringBuilder()

@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">XML Mobile</string>
     <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="main_fragment_label">Main Fragment</string>
+    <string name="main_fragment_label">XML Mobile</string>
     <string name="button">button</string>
     <string name="open_button">Open xml file</string>
     <string name="theme_switch">Dark Mode</string>
     <string name="node">Node</string>
+
 </resources>
