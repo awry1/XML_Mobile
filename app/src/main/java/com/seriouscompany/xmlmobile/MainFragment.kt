@@ -34,7 +34,7 @@ class MainFragment : Fragment() {
 
         if (file?.treeRoot != null) {
             visibleNodes.clear()
-            visibleNodes.add(VisibleNode(file.treeRoot!!, 0))
+            visibleNodes.addAll(buildVisibleNodes(file.treeRoot!!))
             setupRecyclerView()
         } else {
             Toast.makeText(context, "Załaduj plik XML", Toast.LENGTH_SHORT).show()
@@ -45,39 +45,30 @@ class MainFragment : Fragment() {
         adapter = XMLTreeAdapter(visibleNodes) { position ->
             toggleChildren(position)
         }
-
         binding.treeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.treeRecyclerView.adapter = adapter
     }
 
     private fun toggleChildren(position: Int) {
-        val node = visibleNodes[position]
-        val children = node.node.getChildren()
+        val clickedNode = visibleNodes[position].node
+        clickedNode.isExpanded = !clickedNode.isExpanded
 
-        if (children.isEmpty()) return
-
-        val insertPosition = position + 1
-
-        // Are children already expanded?
-        val isExpanded = (insertPosition < visibleNodes.size &&
-                visibleNodes[insertPosition].depth > node.depth)
-
-        if (isExpanded) {
-            // Delete children (recursively)
-            var removeCount = 0
-            var i = insertPosition
-            while (i < visibleNodes.size && visibleNodes[i].depth > node.depth) {
-                removeCount++
-                i++
-            }
-            visibleNodes.subList(insertPosition, insertPosition + removeCount).clear()
-            adapter.notifyItemRangeRemoved(insertPosition, removeCount)
-        } else {
-            // Append children at the right position
-            val newNodes = children.map { VisibleNode(it, node.depth + 1) }
-            visibleNodes.addAll(insertPosition, newNodes)
-            adapter.notifyItemRangeInserted(insertPosition, newNodes.size)
+        visibleNodes.clear()
+        viewModel.file?.treeRoot?.let {
+            visibleNodes.addAll(buildVisibleNodes(it))
         }
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun buildVisibleNodes(node: XMLTreeStructure.Node, depth: Int = 0): List<VisibleNode> {
+        val result = mutableListOf<VisibleNode>()
+        result.add(VisibleNode(node, depth, node.isExpanded))
+        if (node.isExpanded) {
+            for (child in node.getChildren()) {
+                result.addAll(buildVisibleNodes(child, depth + 1))
+            }
+        }
+        return result
     }
 
     override fun onDestroyView() {

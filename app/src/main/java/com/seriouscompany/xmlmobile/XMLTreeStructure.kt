@@ -9,6 +9,7 @@ class XMLTreeStructure {
     class Node(val nodeName: String) {
         var nodeValue: String? = null
         private val children: MutableList<Node> = mutableListOf()
+        var isExpanded: Boolean = false
 
         fun getChildren(): List<Node> = children
         fun addChild(child: Node) = children.add(child)
