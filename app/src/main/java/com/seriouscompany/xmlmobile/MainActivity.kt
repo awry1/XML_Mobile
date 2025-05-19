@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         message.append(continueSpan1)
 
         AlertDialog.Builder(this)
-            .setTitle("Content unspported")
+            .setTitle("Content unsupported")
             .setMessage(message)
             .setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
