@@ -3,7 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="main_fragment_label">XML Mobile</string>
     <string name="button">button</string>
-    <string name="open_button">Open xml file</string>
+    <string name="menu_button">Open menu</string>
     <string name="theme_switch">Dark Mode</string>
     <string name="node">Node</string>
 

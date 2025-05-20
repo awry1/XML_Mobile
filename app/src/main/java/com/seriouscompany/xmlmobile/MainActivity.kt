@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val treeStructure = XMLTreeStructure()
     private val viewModel by viewModels<MainViewModel>()
+    private var isFabMenuOpen = false
 
     private val getFile = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
@@ -72,7 +73,22 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.fab.setOnClickListener {
+            toggleFabMenu()
+        }
+
+        binding.fabOption1.setOnClickListener {
             getFile.launch("*/*")
+            toggleFabMenu()
+        }
+
+        binding.fabOption2.setOnClickListener {
+            Toast.makeText(this, "Option 2 clicked", Toast.LENGTH_SHORT).show()
+            toggleFabMenu()
+        }
+
+        binding.fabOption3.setOnClickListener {
+            Toast.makeText(this, "Option 3 clicked", Toast.LENGTH_SHORT).show()
+            toggleFabMenu()
         }
     }
 
@@ -98,6 +114,44 @@ class MainActivity : AppCompatActivity() {
             recreate()
         }
         return true
+    }
+
+    private fun showFabMenu() {
+        binding.fabOption1.apply {
+            visibility = android.view.View.VISIBLE
+            animate().alpha(1f).setDuration(200).start()
+        }
+        binding.fabOption2.apply {
+            visibility = android.view.View.VISIBLE
+            animate().alpha(1f).setDuration(200).start()
+        }
+        binding.fabOption3.apply {
+            visibility = android.view.View.VISIBLE
+            animate().alpha(1f).setDuration(200).start()
+        }
+    }
+
+    private fun hideFabMenu() {
+        binding.fabOption1.animate().alpha(0f).setDuration(200).withEndAction {
+            binding.fabOption1.visibility = android.view.View.GONE
+        }.start()
+        binding.fabOption2.animate().alpha(0f).setDuration(200).withEndAction {
+            binding.fabOption2.visibility = android.view.View.GONE
+        }.start()
+        binding.fabOption3.animate().alpha(0f).setDuration(200).withEndAction {
+            binding.fabOption3.visibility = android.view.View.GONE
+        }.start()
+    }
+
+    private fun toggleFabMenu() {
+        if (isFabMenuOpen) {
+            hideFabMenu()
+            binding.fab.animate().rotation(0f).setDuration(200).start()
+        } else {
+            showFabMenu()
+            binding.fab.animate().rotation(45f).setDuration(200).start()
+        }
+        isFabMenuOpen = !isFabMenuOpen
     }
 
     private fun showConfirmationDialog(appName: String) {
@@ -128,7 +182,7 @@ class MainActivity : AppCompatActivity() {
             .setMessage(message)
             .setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
-                continueWithApp()
+//                continueWithApp()
             }
             /*.setNegativeButton("No") { dialog, _ ->
                 dialog.dismiss()

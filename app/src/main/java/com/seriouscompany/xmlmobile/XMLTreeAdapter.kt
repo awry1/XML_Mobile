@@ -30,13 +30,16 @@ class XMLTreeAdapter(
         val depth = visibleNode.depth
         val context = holder.itemView.context
 
-        val text = "${depth}. <${node.nodeName}> ${node.nodeValue.orEmpty()}"
+        val tagName = node.nodeName
+        val nodeValue = node.nodeValue.orEmpty()
+        val nodePart = if (nodeValue.isNotBlank()) "\n$nodeValue" else ""
+        val text = "$depth. $tagName$nodePart"
         val spannable = SpannableString(text)
 
         val depthEnd = text.indexOf(" ")
-        val tagStart = text.indexOf("<")
-        val tagEnd = text.indexOf(">") + 1
-        val valueStart = tagEnd + 1
+        val tagStart = depthEnd + 1
+        val tagEnd = tagStart + tagName.length
+        val valueStart = tagEnd
 
         spannable.setSpan(
             ForegroundColorSpan(ContextCompat.getColor(context, R.color.numbering)),

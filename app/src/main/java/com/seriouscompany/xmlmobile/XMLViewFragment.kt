@@ -8,11 +8,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.seriouscompany.xmlmobile.databinding.FragmentMainBinding
+import com.seriouscompany.xmlmobile.databinding.FragmentXmlViewBinding
 
-class MainFragment : Fragment() {
+class XMLViewFragment : Fragment() {
 
-    private var _binding: FragmentMainBinding? = null
+    private var _binding: FragmentXmlViewBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: MainViewModel by activityViewModels()
@@ -23,7 +23,7 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMainBinding.inflate(inflater, container, false)
+        _binding = FragmentXmlViewBinding.inflate(inflater, container, false)
         return binding.root
     }
 
