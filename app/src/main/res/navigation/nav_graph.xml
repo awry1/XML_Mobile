@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/MainFragment"
         android:name="com.seriouscompany.xmlmobile.XMLViewFragment"
-        android:label="@string/main_fragment_label"
+        android:label="@string/app_label"
         tools:layout="@layout/fragment_xml_view" />
 
 </navigation>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="numbering">#90A4AE</color>
-    <color name="tag">#64B5F6</color>
-    <color name="value">#FF7043</color>
+    <color name="numbering">#888888</color>
+    <color name="tag">#3399ff</color>
+    <color name="value">#ffffff</color>
 </resources>

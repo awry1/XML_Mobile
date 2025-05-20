@@ -1,10 +1,11 @@
 <resources>
     <string name="app_name">XML Mobile</string>
     <string name="action_settings">Settings</string>
-    <string name="main_fragment_label">XML Mobile</string>
-    <string name="button">button</string>
-    <string name="menu_button">Open menu</string>
+    <string name="app_label">XML Mobile</string>
     <string name="theme_switch">Dark Mode</string>
-    <string name="node">Node</string>
+    <string name="menu_button">Open menu</string>
+    <string name="menu_option_1">Select XML file</string>
+    <string name="menu_option_2">opcja2</string>
+    <string name="menu_option_3">opcja3</string>
 
 </resources>

@@ -51,16 +51,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun readFileContent(uri: Uri): String? {
-        return try {
-            contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
-        } catch (e: Exception) {
-            Toast.makeText(this, "Error reading file: ${e.message}", Toast.LENGTH_LONG).show()
-            null
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        viewModel.loadThemePreference(this)
+
+        if (viewModel.isDarkModeEnabled) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -72,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        binding.fab.setOnClickListener {
+        binding.fabMenu.setOnClickListener {
             toggleFabMenu()
         }
 
@@ -93,27 +92,43 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
 
         val switchItem = menu.findItem(R.id.theme_switch)
         val switchView = switchItem.actionView as SwitchCompat
         switchView.text = getString(R.string.theme_switch)
 
-        val currentNightMode =
-            resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
-        switchView.isChecked =
-            currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        switchView.isChecked = viewModel.isDarkModeEnabled
 
         switchView.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            if (isChecked != viewModel.isDarkModeEnabled) {
+                viewModel.isDarkModeEnabled = isChecked
+                viewModel.saveThemePreference(this)
+
+                if (isChecked) {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                } else {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                }
+                recreate()
             }
-            recreate()
         }
         return true
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        return navController.navigateUp(appBarConfiguration)
+                || super.onSupportNavigateUp()
+    }
+
+    private fun readFileContent(uri: Uri): String? {
+        return try {
+            contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error reading file: ${e.message}", Toast.LENGTH_LONG).show()
+            null
+        }
     }
 
     private fun showFabMenu() {
@@ -146,10 +161,10 @@ class MainActivity : AppCompatActivity() {
     private fun toggleFabMenu() {
         if (isFabMenuOpen) {
             hideFabMenu()
-            binding.fab.animate().rotation(0f).setDuration(200).start()
+            binding.fabMenu.animate().rotation(0f).setDuration(200).start()
         } else {
             showFabMenu()
-            binding.fab.animate().rotation(45f).setDuration(200).start()
+            binding.fabMenu.animate().rotation(45f).setDuration(200).start()
         }
         isFabMenuOpen = !isFabMenuOpen
     }
@@ -199,11 +214,5 @@ class MainActivity : AppCompatActivity() {
     private fun exitApp() {
         // Logic to exit the app or show a message
         finish()
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration)
-                || super.onSupportNavigateUp()
     }
 }

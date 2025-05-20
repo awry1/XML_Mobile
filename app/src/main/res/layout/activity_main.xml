@@ -29,7 +29,7 @@
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="225dp"
         android:visibility="gone"
-        android:contentDescription="opcja1"
+        android:contentDescription="@string/menu_option_1"
         app:srcCompat="@android:drawable/ic_menu_sort_by_size" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -40,8 +40,8 @@
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="155dp"
         android:visibility="gone"
-        android:contentDescription="opcja2"
-        app:srcCompat="@android:drawable/ic_menu_gallery" />
+        android:contentDescription="@string/menu_option_2"
+        app:srcCompat="@android:drawable/ic_menu_manage" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_option3"
@@ -51,11 +51,11 @@
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="85dp"
         android:visibility="gone"
-        android:contentDescription="opcja3"
+        android:contentDescription="@string/menu_option_3"
         app:srcCompat="@android:drawable/ic_menu_camera" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fab_menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
