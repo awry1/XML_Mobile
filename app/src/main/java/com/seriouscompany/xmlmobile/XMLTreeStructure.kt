@@ -6,59 +6,64 @@ import java.io.StringReader
 import java.util.Stack
 
 class XMLTreeStructure {
+
     class Node(val nodeName: String) {
         var nodeValue: String? = null
-        private val children: MutableList<Node> = mutableListOf()
-        var isExpanded: Boolean = false
+        private val children = mutableListOf<Node>()
+        var isExpanded = false
 
         fun getChildren(): List<Node> = children
-        fun addChild(child: Node) = children.add(child)
-
-        fun toSimpleString(): String {
-            val sb = StringBuilder()
-            sb.append(nodeName)
-            nodeValue?.let { sb.append(": ").append(it) }
-            sb.append("\n")
-            for (child in children) {
-                sb.append(child.toSimpleString())
-            }
-            return sb.toString()
+        fun addChild(child: Node) {
+            children.add(child)
         }
     }
 
     fun parseXMLFromFile(file: File?): Node? {
+        if (file?.content.isNullOrEmpty()) return null
+
         var rootNode: Node? = null
-        try {
-            val parser = Xml.newPullParser()
-            parser.setInput(StringReader(file?.content))
-            val nodeStack = Stack<Node?>()
+        val nodeStack = Stack<Node>()
+
+        return try {
+            val parser = Xml.newPullParser().apply {
+                setInput(StringReader(file!!.content))
+            }
+
             var eventType = parser.eventType
 
             while (eventType != XmlPullParser.END_DOCUMENT) {
-                val nodeName = parser.name
+                val tagName = parser.name
+
                 when (eventType) {
                     XmlPullParser.START_TAG -> {
-                        val newNode = Node(nodeName)
+                        val newNode = Node(tagName)
                         if (nodeStack.isNotEmpty()) {
-                            nodeStack.peek()?.addChild(newNode)
+                            nodeStack.peek().addChild(newNode)
                         } else {
                             rootNode = newNode
                         }
                         nodeStack.push(newNode)
                     }
-                    XmlPullParser.END_TAG -> nodeStack.pop()
+
                     XmlPullParser.TEXT -> {
                         val text = parser.text.trim()
                         if (text.isNotEmpty()) {
-                            nodeStack.peek()?.nodeValue = text
+                            nodeStack.peek().nodeValue = text
                         }
                     }
+
+                    XmlPullParser.END_TAG -> {
+                        if (nodeStack.isNotEmpty()) nodeStack.pop()
+                    }
                 }
+
                 eventType = parser.next()
             }
+
+            rootNode
         } catch (e: Exception) {
             e.printStackTrace()
+            null
         }
-        return rootNode
     }
 }

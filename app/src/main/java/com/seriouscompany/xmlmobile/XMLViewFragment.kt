@@ -1,10 +1,10 @@
 package com.seriouscompany.xmlmobile
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,14 +30,15 @@ class XMLViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val file = viewModel.file
-
-        if (file?.treeRoot != null) {
-            visibleNodes.clear()
-            visibleNodes.addAll(buildVisibleNodes(file.treeRoot!!))
+        val rootNode = viewModel.file?.treeRoot
+        if (rootNode != null) {
+            visibleNodes.apply {
+                clear()
+                addAll(buildVisibleNodes(rootNode))
+            }
             setupRecyclerView()
         } else {
-            Toast.makeText(context, "Załaduj plik XML", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(context, "Załaduj plik XML", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -45,30 +46,33 @@ class XMLViewFragment : Fragment() {
         adapter = XMLTreeAdapter(visibleNodes) { position ->
             toggleChildren(position)
         }
-        binding.treeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.treeRecyclerView.adapter = adapter
+        binding.treeRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = this@XMLViewFragment.adapter
+        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun toggleChildren(position: Int) {
         val clickedNode = visibleNodes[position].node
         clickedNode.isExpanded = !clickedNode.isExpanded
 
-        visibleNodes.clear()
-        viewModel.file?.treeRoot?.let {
-            visibleNodes.addAll(buildVisibleNodes(it))
+        visibleNodes.apply {
+            clear()
+            viewModel.file?.treeRoot?.let { addAll(buildVisibleNodes(it)) }
         }
         adapter.notifyDataSetChanged()
     }
 
     private fun buildVisibleNodes(node: XMLTreeStructure.Node, depth: Int = 0): List<VisibleNode> {
-        val result = mutableListOf<VisibleNode>()
-        result.add(VisibleNode(node, depth, node.isExpanded))
+        val nodes = mutableListOf<VisibleNode>()
+        nodes.add(VisibleNode(node, depth, node.isExpanded))
         if (node.isExpanded) {
-            for (child in node.getChildren()) {
-                result.addAll(buildVisibleNodes(child, depth + 1))
+            node.getChildren().forEach { child ->
+                nodes.addAll(buildVisibleNodes(child, depth + 1))
             }
         }
-        return result
+        return nodes
     }
 
     override fun onDestroyView() {
